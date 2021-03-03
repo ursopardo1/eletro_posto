@@ -44,7 +44,6 @@ while True:
         except:
             continue
         try:  # CABLE_CHECK
-            '''Definir função para desempacotamento de ID e ESTADO'''
             state_check = serial.readline()
             serial.write(b'IDREQ')  # b'3' Solicitação de ID NFCARD
             sleep(.5)
