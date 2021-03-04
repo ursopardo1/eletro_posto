@@ -16,4 +16,3 @@ def decode_format(data):
     out_data = decode_data[0:][:-2]
     return out_data
 
-
