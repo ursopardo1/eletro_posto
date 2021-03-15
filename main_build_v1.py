@@ -44,33 +44,35 @@ def serial_comm(cmd_in, time_in, flush):
     return serial_data_out
 
 
-def serial_read(data_in):
-    data_decode = data_in
-    data_out = data_decode.decode("utf-8")
-    return data_out
-
-
 while True:
     try:
-        state_check = serial_comm(1, 2, True)  # serial_comm(cmd_serial,delay,serial.flushInput())
-        ''' Leitura de ESTADO'''
-        print(state_check)
+        serial.flushInput()
+        data_1 = b'1'
+        data_2 = b'2'
+        serial.write(data_1)
+        sleep(2)
+        state_check = decode_format(serial.readline())
         try:  # CARD_CHECK
-            if state_check == 'ST_SNFC':
-                '''b'ST_SNFC Requisição de cartão, MCU aguarda a aproximação do RFIDCard'''
-                state_check = serial_comm(2, 1, True)
-                # print(state_check)
+            if state_check == 'ST_SNFC':  # b'1'
+                serial.flushInput()
+                serial.write(data_2)
                 sleep(.5)
+                serial_data = decode_format(serial.readline())
+                print(serial_data)
+                sleep(2)
                 id_check = decode_format(serial.readline())
-                # print(id_check)
+                print(id_check)
                 if id_check in white_list:
-                    state_check = serial_comm(3, .5, True)
-                    '''# b'NFC-OK' Estado de leitura OK, o MCU irá o retorno do MCU será CABLE_CHECK'''
-                    # print(state_check)
+                    serial.flushInput()
+                    serial.write(b'3')  # b'NFC-OK' Estado de leitura OK, o MCU irá o retorno do MCU será CABLE_CHECK
+                    sleep(.5)
                     print("White list ok")
+                    # with open(str('succs')+f'_data{today}', "a") as f:
+                    #    writer = csv.writer(f, delimiter=";")
+                    #    writer.writerow([time.asctime(), f'{id_check};{user_list.get(id_check)}'])
                 else:
-                    state_check = serial_comm(4, 1, True)
-                    '''b'NFC-NOK' Estado de leitura falhou, o retorno do MCU será o CARD_CHECK'''
+                    serial.write(b'4')  # b'NFC-NOK' Estado de leitura falhou, o retorno do MCU será o CARD_CHECK
+                    sleep(1)
                     with open(str('unsuccs')+f'_data{today}', "a") as f:
                         writer = csv.writer(f, delimiter=";")
                         writer.writerow([time.asctime(), f'{id_check};{user_list.get(id_check)}'])
@@ -80,8 +82,13 @@ while True:
         except:
             continue
         try:  # CABLE_CHECK
+            state_check = decode_format(serial.readline())
+            sleep(1)
             if state_check == "ST_IDCOK":
-                state_check = serial_comm(2, 1, True)
+                serial.flushInput()
+                serial.write(b'2')  # b'ST_IDREQ' Solicitação de ID NFCARD
+                sleep(.5)
+                serial_data = decode_format(serial.readline())
                 sleep(2)
                 id_check = decode_format(serial.readline())
                 print(id_check)

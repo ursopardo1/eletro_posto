@@ -1,3 +1,6 @@
+import serial
+from time import sleep
+
 def unpack_data(inc_data):
     dep_data = inc_data.split()
     dep_data[1] = float(dep_data[1])
@@ -16,3 +19,18 @@ def decode_format(data):
     out_data = decode_data[0:][:-2]
     return out_data
 
+
+def serial_comm(cmd_in, time, flush):
+    if flush:
+        serial.flushInput()
+    cmd = bytes(cmd_in, "utf-8")
+    serial.write(cmd)
+    sleep(time)
+    serial_data_out = serial.readline()
+    return serial_data_out
+
+
+def serial_read(data_in):
+    data_decode = data_in
+    serial_data_out = data_decode.decode("utf-8")
+    return serial_data_out
